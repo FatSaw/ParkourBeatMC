@@ -11,7 +11,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class TptoworldCommand implements CommandExecutor {
+public final class TptoworldCommand implements CommandExecutor {
 	private final Location mainworldlocation;
 	private final Set<String> worlds;
 	protected TptoworldCommand(Location mainworldlocation, Set<String> worlds) {
