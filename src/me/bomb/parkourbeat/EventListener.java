@@ -14,7 +14,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
-public class EventListener implements Listener {
+public final class EventListener implements Listener {
 
 	@EventHandler
 	public void onSpawnLocation(PlayerSpawnLocationEvent event) {
@@ -40,7 +40,7 @@ public class EventListener implements Listener {
 		player.setFoodLevel(20);
 		player.setSaturation(5.0F);
 		player.setExhaustion(0.0F);
-		Game.leaveGame(player);
+		GameStarter.leaveGame(player);
 	}
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
