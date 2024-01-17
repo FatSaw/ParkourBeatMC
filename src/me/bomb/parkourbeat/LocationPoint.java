@@ -1,13 +1,13 @@
 package me.bomb.parkourbeat;
 
-public class LocationPoint {
+class LocationPoint {
 	private final double x;
 	private final double y;
 	private final double z;
 	private final float yaw;
 	private final float pitch;
 	
-	public LocationPoint(double x,double y,double z,float yaw,float pitch) {
+	protected LocationPoint(double x,double y,double z,float yaw,float pitch) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
