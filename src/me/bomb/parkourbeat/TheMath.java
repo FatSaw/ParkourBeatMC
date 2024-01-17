@@ -1,8 +1,11 @@
 package me.bomb.parkourbeat;
 
-class TheMath {
+final class TheMath {
     private static final int[] SINE_TABLE_INT = new int[16384 + 1];
     private static final float SINE_TABLE_MIDPOINT;
+    
+    private TheMath() {
+    }
 
     protected static float sin(float f) {
         return lookup((int) (f * 10430.38) & 0xFFFF);
