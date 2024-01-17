@@ -10,7 +10,11 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class PlayCommand implements CommandExecutor {
+public final class PlayCommand implements CommandExecutor {
+	
+	protected PlayCommand() {
+	}
+	
 	private final Random random = new Random();
 
 	@Override
@@ -19,15 +23,16 @@ public class PlayCommand implements CommandExecutor {
 			Player player = (Player) sender;
 			Set<String> worldnames = GameOptions.getWorldNames();
 			List<String> avilableworlds = new ArrayList<String>();
-			Set<String> ingameworlds = Game.getWorlds();
+			Set<String> ingameworlds = GameStarter.getWorlds();
 			for(String worldname : worldnames) {
 				if(!ingameworlds.contains(worldname)) {
 					avilableworlds.add(worldname);
 				}
 			}
 			String freearenaname = avilableworlds.get(random.nextInt(avilableworlds.size()));
-			new Game(freearenaname, player);
 			sender.sendMessage("Trying to start game...");
+			new GameStarter(freearenaname, player);
+			
 		} else {
 			sender.sendMessage("Command only for players!");
 		}
