@@ -1,7 +1,5 @@
 package me.bomb.parkourbeat;
 
-import java.util.ArrayList;
-
 import org.bukkit.World;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
@@ -41,35 +39,27 @@ final class CameraManager extends Thread {
 		packetgamestatechange = new PacketPlayOutGameStateChange(3, -1);
 	}
 	
-	protected static CameraManager playCutscene(World world, LocationPoint[] preview, ArrayList<Player> players) {
-		ArrayList<EntityPlayer> eplayers = new ArrayList<EntityPlayer>();
-		for(Player player : players) {
-			if(!player.isOnline()) {
-				continue;
-			}
-			eplayers.add(((CraftPlayer)player).getHandle());
-		}
-		return new CameraManager(world, preview, eplayers);
+	protected static CameraManager playCutscene(World world, LocationPoint[] preview, Player player) {
+		return new CameraManager(world, preview, ((CraftPlayer)player).getHandle());
 	}
 	
 	private final World world;
 	private final LocationPoint[] preview;
-	private final ArrayList<EntityPlayer> players;
+	private final EntityPlayer entityplayer;
 	
-	private CameraManager(World world, LocationPoint[] preview, ArrayList<EntityPlayer> players) {
+	private CameraManager(World world, LocationPoint[] preview, EntityPlayer entityplayer) {
 		this.world = world;
 		this.preview = preview;
-		this.players = players;
-		if(world != null && preview != null && preview.length > 0 && players != null && !players.isEmpty()) {
+		this.entityplayer = entityplayer;
+		if(world != null && preview != null && preview.length > 0 && entityplayer != null) {
 			start();
 		}
 	}
 	
 	public void run() {
-		for(EntityPlayer entityplayer : players) {
-			ChannelPipeline pipeline = entityplayer.playerConnection.networkManager.channel.pipeline();
-			pipeline.addBefore("packet_handler", "cutscene", new CutscenePacketFilter());
-		}
+		ChannelPipeline pipeline = entityplayer.playerConnection.networkManager.channel.pipeline();
+		pipeline.addBefore("packet_handler", "cutscene", new CutscenePacketFilter());
+		
 		LocationPoint previouslocation = preview[0];
 		EntityArmorStand stand = new EntityArmorStand(((CraftWorld)world).getHandle());
 		stand.setLocation(previouslocation.getX(), previouslocation.getY() - 1.777d, previouslocation.getZ(), previouslocation.getYaw(), previouslocation.getPitch());
@@ -78,14 +68,14 @@ final class CameraManager extends Thread {
 		PacketPlayOutSpawnEntityLiving posel = new PacketPlayOutSpawnEntityLiving(stand);
 		PacketPlayOutCamera poc = new PacketPlayOutCamera(stand);
 		PacketPlayOutEntityDestroy poed = new PacketPlayOutEntityDestroy(-1);
-		for(EntityPlayer entityplayer : players) {
-			PlayerConnection connection = entityplayer.playerConnection;
-			connection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_GAME_MODE, entityplayer));
-			connection.sendPacket(packetemptywindowitems);
-			connection.sendPacket(packetgamestatechange);
-			connection.sendPacket(posel);
-			connection.sendPacket(poc);
-		}
+		
+		PlayerConnection connection = entityplayer.playerConnection;
+		connection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_GAME_MODE, entityplayer));
+		connection.sendPacket(packetemptywindowitems);
+		connection.sendPacket(packetgamestatechange);
+		connection.sendPacket(posel);
+		connection.sendPacket(poc);
+		
 		short k = 0;
 		byte sleep = 50;
 		while (++k < preview.length) {
@@ -106,10 +96,7 @@ final class CameraManager extends Thread {
 			stand.yaw = location.getYaw();
 			stand.pitch = location.getPitch();
 			Packet<?> movepacket = hasmove ? new PacketPlayOutEntityTeleport(stand) : new PacketPlayOutEntity.PacketPlayOutEntityLook(-1,(byte)  ((int)(location.getYaw() * 256.0F / 360.0F)), (byte) ((int)(location.getPitch() * 256.0F / 360.0F)), false);
-			for(EntityPlayer entityplayer : players) {
-				PlayerConnection connection = entityplayer.playerConnection;
-				connection.sendPacket(movepacket);
-			}
+			connection.sendPacket(movepacket);
 			long timedif = System.currentTimeMillis();
 			timedif =- time;
 			if (timedif < 0)
@@ -124,20 +111,17 @@ final class CameraManager extends Thread {
 			} catch (InterruptedException e) {
 			}
 		}
-		for(EntityPlayer entityplayer : players) {
-			PlayerConnection connection = entityplayer.playerConnection;
-			Channel channel = connection.networkManager.channel;
-			channel.eventLoop().submit(() -> {
-				channel.pipeline().remove("cutscene");
-				return null;
-			});
-			connection.sendPacket(poed);
-			connection.sendPacket(new PacketPlayOutCamera(entityplayer));
-			connection.sendPacket(new PacketPlayOutGameStateChange(3,entityplayer.playerInteractManager.getGameMode().getId()));
-			connection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_GAME_MODE,entityplayer));
-			connection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
-			entityplayer.updateInventory(entityplayer.defaultContainer);
-		}
+		Channel channel = connection.networkManager.channel;
+		channel.eventLoop().submit(() -> {
+			channel.pipeline().remove("cutscene");
+			return null;
+		});
+		connection.sendPacket(poed);
+		connection.sendPacket(new PacketPlayOutCamera(entityplayer));
+		connection.sendPacket(new PacketPlayOutGameStateChange(3,entityplayer.playerInteractManager.getGameMode().getId()));
+		connection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_GAME_MODE,entityplayer));
+		connection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
+		entityplayer.updateInventory(entityplayer.defaultContainer);
 	}
 	
 }
