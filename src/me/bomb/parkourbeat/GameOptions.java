@@ -27,7 +27,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class GameOptions {
+final class GameOptions {
 	private final static FilenameFilter mcafilter = new FilenameFilter() {
 	    @Override
 	    public boolean accept(File dir, String name) {
@@ -36,25 +36,23 @@ public final class GameOptions {
 	};
 	private final static VoidGenerator voidgen = new VoidGenerator();
 	private final static HashMap<String,GameOptions> gameoptions = new HashMap<String,GameOptions>();
-	public final static Set<String> loadedarenas = new HashSet<String>();
+	protected final static Set<String> loadedarenas = new HashSet<String>();
 	
 
 	protected final static World lobbyworld;
 	protected final static Location exitlocation;
 	protected final static boolean debug;
 	private final byte[] leveldat;
-	public final String songplaylistname;
-	public final byte lives;
+	protected final String songplaylistname;
 	private final HashMap<String,byte[]> regiondata;
-	public final LocationPoint[] preview;
-	public final List<LocationZones> checkpointzones;
-	public final LocationZone spawnruner;
-	public final LocationZone gamezone;
-	public final LocationZone finishzone;
+	protected final LocationPoint[] preview;
+	protected final List<LocationZones> checkpointzones;
+	protected final LocationZone spawnruner;
+	protected final LocationZone gamezone;
+	protected final LocationZone finishzone;
 	
-	private GameOptions(String songplaylistname, byte lives, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, List<LocationZones> checkpointzones, LocationZone spawnruner, LocationZone gamezone, LocationZone finishzone) {
+	private GameOptions(String songplaylistname, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, List<LocationZones> checkpointzones, LocationZone spawnruner, LocationZone gamezone, LocationZone finishzone) {
 		this.songplaylistname = songplaylistname;
-		this.lives = lives;
 		this.regiondata = regiondata;
 		this.leveldat = leveldat;
 		this.preview = preview;
@@ -106,10 +104,6 @@ public final class GameOptions {
 				}
 				int worldcount = gamefieldcs.getInt("worldcount", 0);
 				if(worldcount<1 || worldcount > 127) {
-					continue;
-				}
-				int lives = gamefieldcs.getInt("lives", 0);
-				if(lives<0 || lives > 127) {
 					continue;
 				}
 				String songplaylistname = gamefieldcs.getString("songplaylistname", null);
@@ -350,7 +344,7 @@ public final class GameOptions {
 					} catch (IOException e) {
 					}
 				}
-				GameOptions gameoption = new GameOptions(songplaylistname, (byte) lives, leveldat, regiondata, preview, checkpointzones, spawnruner, gamezone, finishzone);
+				GameOptions gameoption = new GameOptions(songplaylistname, leveldat, regiondata, preview, checkpointzones, spawnruner, gamezone, finishzone);
 				gamefieldid = gamefieldid.concat("_");
 				for(byte i = (byte) worldcount;--i>-1;) {
 					gameoptions.put(gamefieldid.concat(Byte.toString((byte)i)), gameoption);
