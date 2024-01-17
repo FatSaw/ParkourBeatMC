@@ -28,9 +28,6 @@ import net.minecraft.server.v1_12_R1.PacketPlayInFlying.PacketPlayInPositionLook
 import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
 
 public final class CutscenePacketFilter extends ChannelDuplexHandler {
-	
-	protected CutscenePacketFilter() {
-	}
 
 	private static final PacketPlayOutWindowItems packetemptywindowitems;
 	
@@ -41,6 +38,9 @@ public final class CutscenePacketFilter extends ChannelDuplexHandler {
 			nnl.add(slot, item);
 		}
 		packetemptywindowitems = new PacketPlayOutWindowItems(0, nnl);
+	}
+	
+	protected CutscenePacketFilter() {
 	}
 	
 	@Override
