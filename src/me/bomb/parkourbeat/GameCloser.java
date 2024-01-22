@@ -26,13 +26,13 @@ final class GameCloser extends BukkitRunnable {
 			}
 			player.sendMessage("Game end!");
 			player.setGameMode(GameMode.ADVENTURE);
-			player.setHealth(player.getMaxHealth());
+			player.setHealth(20);
 			player.setFoodLevel(20);
 			player.setSaturation(5.0F);
 			player.setExhaustion(0.0F);
+			player.setFireTicks(-40);
 			ingameplayers.remove(player, game);
 			player.teleport(GameOptions.exitlocation);
-			player.setGameMode(GameMode.ADVENTURE);
 		}
 		GameOptions.destroyArena(world.getName());
 	}
