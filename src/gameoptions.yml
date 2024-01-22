@@ -6,8 +6,8 @@ gamefields:
     - "#-558.5#48#-315#0#0#0#0#"
     - "160$~#1#0#0#0#0#0#0#"
     worldcount: 3
-    lives: 0
     songplaylistname: pbtest
+    songname: 1
     spawn:
       minx: -559
       miny: 48
