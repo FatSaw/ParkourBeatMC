@@ -43,16 +43,15 @@ final class GameOptions {
 	protected final static Location exitlocation;
 	protected final static boolean debug;
 	private final byte[] leveldat;
-	protected final String songplaylistname;
+	protected final String songplaylistname, songname;
 	private final HashMap<String,byte[]> regiondata;
 	protected final LocationPoint[] preview;
 	protected final List<LocationZones> checkpointzones;
-	protected final LocationZone spawnruner;
-	protected final LocationZone gamezone;
-	protected final LocationZone finishzone;
+	protected final LocationZone spawnruner, gamezone, finishzone;
 	
-	private GameOptions(String songplaylistname, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, List<LocationZones> checkpointzones, LocationZone spawnruner, LocationZone gamezone, LocationZone finishzone) {
+	private GameOptions(String songplaylistname, String songname, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, List<LocationZones> checkpointzones, LocationZone spawnruner, LocationZone gamezone, LocationZone finishzone) {
 		this.songplaylistname = songplaylistname;
+		this.songname = songname;
 		this.regiondata = regiondata;
 		this.leveldat = leveldat;
 		this.preview = preview;
@@ -107,6 +106,7 @@ final class GameOptions {
 					continue;
 				}
 				String songplaylistname = gamefieldcs.getString("songplaylistname", null);
+				String songname = gamefieldcs.getString("songname", null);
 				ConfigurationSection runerspawn = gamefieldcs.getConfigurationSection("spawn");
 				ConfigurationSection finishcs = gamefieldcs.getConfigurationSection("finish");
 				ConfigurationSection gamezonecs = gamefieldcs.getConfigurationSection("gamezone");
@@ -344,7 +344,7 @@ final class GameOptions {
 					} catch (IOException e) {
 					}
 				}
-				GameOptions gameoption = new GameOptions(songplaylistname, leveldat, regiondata, preview, checkpointzones, spawnruner, gamezone, finishzone);
+				GameOptions gameoption = new GameOptions(songplaylistname, songname, leveldat, regiondata, preview, checkpointzones, spawnruner, gamezone, finishzone);
 				gamefieldid = gamefieldid.concat("_");
 				for(byte i = (byte) worldcount;--i>-1;) {
 					gameoptions.put(gamefieldid.concat(Byte.toString((byte)i)), gameoption);
