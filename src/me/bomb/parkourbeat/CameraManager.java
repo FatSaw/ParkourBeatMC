@@ -40,6 +40,9 @@ final class CameraManager extends Thread {
 	}
 	
 	protected static CameraManager playCutscene(World world, LocationPoint[] preview, Player player) {
+		if(world==null||preview==null||preview.length<1||player==null||!player.isOnline()) {
+			return null;
+		}
 		return new CameraManager(world, preview, ((CraftPlayer)player).getHandle());
 	}
 	
@@ -51,9 +54,7 @@ final class CameraManager extends Thread {
 		this.world = world;
 		this.preview = preview;
 		this.entityplayer = entityplayer;
-		if(world != null && preview != null && preview.length > 0 && entityplayer != null) {
-			start();
-		}
+		start();
 	}
 	
 	public void run() {
