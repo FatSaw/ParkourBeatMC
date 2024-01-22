@@ -2,7 +2,6 @@ package me.bomb.parkourbeat;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -19,18 +18,27 @@ final class GameStarter extends BukkitRunnable {
 	private final static HashMap<Player,GameStarter> ingameplayers = new HashMap<Player,GameStarter>();
 	private final Location spawnloc;
 	private final World world;
-	private final String songplaylistname;
+	private final String songplaylistname, songname;
 	private final LocationZone spawnruner, gamezone, finish;
 	private final Player player;
 	private final LocationPoint[] preview;
 	private final GameTicker gameticker;
 	private final GameCloser gamecloser;
-	private List<String> soundnames = null;
+	private boolean playlistloaded, cameramanagerstarted;
 	private CameraManager cameramanager;
 	
-	protected GameStarter(String arenaname, Player player) {
-		ingameplayers.put(player, this);
+	protected GameStarter(String arenaname, Player player) throws NullPointerException {
+		if(arenaname==null) {
+			throw new NullPointerException("arenaname cannot be null");
+		}
+		if(player==null) {
+			throw new NullPointerException("player cannot be null");
+		}
 		GameOptions gameoptions = GameOptions.initArena(arenaname);
+		if(gameoptions==null) {
+			throw new NullPointerException("gameoptions cannot be null");
+		}
+		ingameplayers.put(player, this);
 		world = Bukkit.getWorld(arenaname);
 		this.player = player;
 		this.spawnruner = gameoptions.spawnruner;
@@ -38,11 +46,13 @@ final class GameStarter extends BukkitRunnable {
 		this.preview = gameoptions.preview;
 		this.finish = gameoptions.finishzone;
 		this.songplaylistname = gameoptions.songplaylistname;
+		this.songname = gameoptions.songname;
 		player.setGameMode(GameMode.ADVENTURE);
-		player.setHealth(player.getMaxHealth());
+		player.setHealth(20);
 		player.setFoodLevel(20);
 		player.setSaturation(5.0F);
 		player.setExhaustion(0.0F);
+		player.setFireTicks(-40);
 		LocationInside loc = spawnruner.randomInside(0.5D);
 		spawnloc = new Location(world, loc.x, loc.y, loc.z);
 		player.teleport(spawnloc);
@@ -70,22 +80,26 @@ final class GameStarter extends BukkitRunnable {
 	}
 	@Override
 	public void run() {
-		if(soundnames==null) {
-			if(songplaylistname.equals(AMusic.getPackName(player))) {
-				soundnames = AMusic.getPlaylistSoundnames(player);
-			}
+		if(!playlistloaded) {
+			playlistloaded = songplaylistname.equals(AMusic.getPackName(player));
 			return;
 		}
-		if(cameramanager == null) {
+		if(!cameramanagerstarted) {
+			cameramanagerstarted = true;
 			cameramanager = CameraManager.playCutscene(world, preview, player);
 		}
-		if(cameramanager.isAlive()) {
+		if(cameramanager!=null && cameramanager.isAlive()) {
 			return;
 		}
-		player.sendMessage("GameStart!");
-		AMusic.playSound(player, soundnames.get(0));
-		player.teleport(spawnloc);
-		gameticker.runTaskTimer(ParkourBeat.plugin, 50, 1L);
+		if(player.getWorld() == world && player.isOnline()) {
+			player.sendMessage("GameStart!");
+			AMusic.setRepeatMode(player, null);
+			AMusic.playSound(player, songname);
+			player.teleport(spawnloc);
+			gameticker.runTaskTimer(ParkourBeat.plugin, 50L, 1L);
+		} else {
+			gamecloser.runTaskLater(ParkourBeat.plugin, 50L);
+		}
 		cancel();
 	}
 }
