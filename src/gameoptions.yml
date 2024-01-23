@@ -15,6 +15,8 @@ gamefields:
       maxx: -559
       maxy: 48
       maxz: -316
+      yaw: 0
+      pitch: 0
     finish:
       minx: -560
       miny: 48
