@@ -329,7 +329,7 @@ final class GameOptions {
 				}
 				File gamefielddir = new File(worldsdirectory, gamefieldid);
 				File leveldatfile = new File(gamefielddir, "level.dat");
-				byte[] readbuf = new byte[8096];
+				byte[] readbuf = new byte[32384];
 				byte[] leveldat = null;
 				try {
 					FileInputStream fis = new FileInputStream(leveldatfile);
