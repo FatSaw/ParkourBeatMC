@@ -19,12 +19,12 @@ final class GameStarter extends BukkitRunnable {
 	private final Location spawnloc;
 	private final World world;
 	private final String songplaylistname, songname;
-	private final LocationZone spawnruner, gamezone, finish;
+	private final LocationZone spawnzone, startzone, gamezone, finish;
 	private final Player player;
 	private final LocationPoint[] preview;
 	private final GameTicker gameticker;
 	private final GameCloser gamecloser;
-	private boolean playlistloaded, cameramanagerstarted;
+	private boolean playlistloaded, cameramanagerstarted, ready;
 	private CameraManager cameramanager;
 	
 	protected GameStarter(String arenaname, Player player) throws NullPointerException {
@@ -41,7 +41,8 @@ final class GameStarter extends BukkitRunnable {
 		ingameplayers.put(player, this);
 		world = Bukkit.getWorld(arenaname);
 		this.player = player;
-		this.spawnruner = gameoptions.spawnruner;
+		this.spawnzone = gameoptions.spawnzone;
+		this.startzone = gameoptions.startzone;
 		this.gamezone = gameoptions.gamezone;
 		this.preview = gameoptions.preview;
 		this.finish = gameoptions.finishzone;
@@ -53,8 +54,8 @@ final class GameStarter extends BukkitRunnable {
 		player.setSaturation(5.0F);
 		player.setExhaustion(0.0F);
 		player.setFireTicks(-40);
-		LocationInside loc = spawnruner.randomInside(0.5D);
-		spawnloc = new Location(world, loc.x, loc.y, loc.z);
+		LocationInside loc = spawnzone.randomInside(0.5D);
+		spawnloc = new Location(world, loc.x, loc.y, loc.z, gameoptions.yaw, gameoptions.pitch);
 		player.teleport(spawnloc);
 		
 		gamecloser = new GameCloser(world, this, ingameplayers);
@@ -62,7 +63,7 @@ final class GameStarter extends BukkitRunnable {
 		if(!songplaylistname.equals(AMusic.getPackName(player))) {
 			AMusic.loadPack(player, songplaylistname, false);
 		}
-		runTaskTimerAsynchronously(ParkourBeat.plugin, 0L, 20L);
+		runTaskTimerAsynchronously(ParkourBeat.plugin, 0L, 5L);
 	}
 
 	protected static void leaveGame(Player player) {
@@ -91,12 +92,29 @@ final class GameStarter extends BukkitRunnable {
 		if(cameramanager!=null && cameramanager.isAlive()) {
 			return;
 		}
+		cameramanager = null;
 		if(player.getWorld() == world && player.isOnline()) {
-			player.sendMessage("GameStart!");
-			AMusic.setRepeatMode(player, null);
-			AMusic.playSound(player, songname);
-			player.teleport(spawnloc);
-			gameticker.runTaskTimer(ParkourBeat.plugin, 50L, 1L);
+			
+			if(startzone==null) {
+				player.sendMessage("Game autostart!");
+				AMusic.setRepeatMode(player, null);
+				AMusic.playSound(player, songname);
+				player.teleport(spawnloc);
+				gameticker.runTaskTimer(ParkourBeat.plugin, 50L, 1L);
+			} else {
+				if(!ready) {
+					ready = true;
+					player.sendMessage("Game ready!");
+				}
+				Location loc = player.getLocation();
+				if(startzone.isOutside(loc.getX(), loc.getY(), loc.getZ())) {
+					return;
+				}
+				player.sendMessage("Game start!");
+				AMusic.setRepeatMode(player, null);
+				AMusic.playSound(player, songname);
+				gameticker.runTaskTimer(ParkourBeat.plugin, 0L, 1L);
+			}
 		} else {
 			gamecloser.runTaskLater(ParkourBeat.plugin, 50L);
 		}
