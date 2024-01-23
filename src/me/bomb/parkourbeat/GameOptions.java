@@ -46,17 +46,19 @@ final class GameOptions {
 	protected final String songplaylistname, songname;
 	private final HashMap<String,byte[]> regiondata;
 	protected final LocationPoint[] preview;
-	protected final List<LocationZones> checkpointzones;
-	protected final LocationZone spawnruner, gamezone, finishzone;
+	protected final LocationZone spawnzone, startzone, gamezone, finishzone;
+	protected float yaw, pitch;
 	
-	private GameOptions(String songplaylistname, String songname, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, List<LocationZones> checkpointzones, LocationZone spawnruner, LocationZone gamezone, LocationZone finishzone) {
+	private GameOptions(String songplaylistname, String songname, byte[] leveldat, HashMap<String,byte[]> regiondata, LocationPoint[] preview, LocationZone spawnzone, float yaw, float pitch, LocationZone startzone, LocationZone gamezone, LocationZone finishzone) {
 		this.songplaylistname = songplaylistname;
 		this.songname = songname;
 		this.regiondata = regiondata;
 		this.leveldat = leveldat;
 		this.preview = preview;
-		this.checkpointzones = checkpointzones;
-		this.spawnruner = spawnruner;
+		this.spawnzone = spawnzone;
+		this.yaw = yaw;
+		this.pitch = pitch;
+		this.startzone = startzone;
 		this.gamezone = gamezone;
 		this.finishzone = finishzone;
 	}
@@ -108,12 +110,13 @@ final class GameOptions {
 				String songplaylistname = gamefieldcs.getString("songplaylistname", null);
 				String songname = gamefieldcs.getString("songname", null);
 				ConfigurationSection runerspawn = gamefieldcs.getConfigurationSection("spawn");
+				ConfigurationSection startcs = gamefieldcs.getConfigurationSection("start");
 				ConfigurationSection finishcs = gamefieldcs.getConfigurationSection("finish");
 				ConfigurationSection gamezonecs = gamefieldcs.getConfigurationSection("gamezone");
 				if(runerspawn == null || finishcs == null || gamezonecs == null || !finishcs.isInt("minx") || !finishcs.isInt("miny") || !finishcs.isInt("minz") || !finishcs.isInt("maxx") || !finishcs.isInt("maxy") || !finishcs.isInt("maxz") || !gamezonecs.isInt("minx") || !gamezonecs.isInt("miny") || !gamezonecs.isInt("minz") || !gamezonecs.isInt("maxx") || !gamezonecs.isInt("maxy") || !gamezonecs.isInt("maxz") || !runerspawn.isInt("minx") || !runerspawn.isInt("miny") || !runerspawn.isInt("minz") || !runerspawn.isInt("maxx") || !runerspawn.isInt("maxy") || !runerspawn.isInt("maxz")) {
 					continue;
 				}
-				ConfigurationSection checkpointscs = gamefieldcs.getConfigurationSection("checkpoints");
+				/*ConfigurationSection checkpointscs = gamefieldcs.getConfigurationSection("checkpoints");
 				List<LocationZones> checkpointzones = null;
 				if(checkpointscs!=null) {
 					checkpointzones = new ArrayList<LocationZones>();
@@ -127,8 +130,11 @@ final class GameOptions {
 					if(checkpointzones.isEmpty()) {
 						checkpointzones = null;
 					}
-				}
+				}*/
+				float spawnyaw = (float) runerspawn.getDouble("yaw", 0.0), spawnpitch = (float) runerspawn.getDouble("pitch", 0.0);
 				LocationZone spawnruner = new LocationZone(runerspawn.getInt("minx"), runerspawn.getInt("miny"), runerspawn.getInt("minz"), runerspawn.getInt("maxx"), runerspawn.getInt("maxy"), runerspawn.getInt("maxz"));
+				
+				LocationZone startzone = startcs == null ? null : new LocationZone(startcs.getInt("minx"), startcs.getInt("miny"), startcs.getInt("minz"), startcs.getInt("maxx"), startcs.getInt("maxy"), startcs.getInt("maxz"));
 				LocationZone gamezone = new LocationZone(gamezonecs.getInt("minx"), gamezonecs.getInt("miny"), gamezonecs.getInt("minz"), gamezonecs.getInt("maxx"), gamezonecs.getInt("maxy"), gamezonecs.getInt("maxz"));
 				LocationZone finishzone = new LocationZone(finishcs.getInt("minx"), finishcs.getInt("miny"), finishcs.getInt("minz"), finishcs.getInt("maxx"), finishcs.getInt("maxy"), finishcs.getInt("maxz"));
 				LocationPoint[] preview = null;
@@ -344,7 +350,7 @@ final class GameOptions {
 					} catch (IOException e) {
 					}
 				}
-				GameOptions gameoption = new GameOptions(songplaylistname, songname, leveldat, regiondata, preview, checkpointzones, spawnruner, gamezone, finishzone);
+				GameOptions gameoption = new GameOptions(songplaylistname, songname, leveldat, regiondata, preview, spawnruner, spawnyaw, spawnpitch, startzone, gamezone, finishzone);
 				gamefieldid = gamefieldid.concat("_");
 				for(byte i = (byte) worldcount;--i>-1;) {
 					gameoptions.put(gamefieldid.concat(Byte.toString((byte)i)), gameoption);
