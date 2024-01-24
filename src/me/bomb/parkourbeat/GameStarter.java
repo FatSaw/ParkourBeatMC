@@ -81,19 +81,19 @@ final class GameStarter extends BukkitRunnable {
 	}
 	@Override
 	public void run() {
-		if(!playlistloaded) {
-			playlistloaded = songplaylistname.equals(AMusic.getPackName(player));
-			return;
-		}
-		if(!cameramanagerstarted) {
-			cameramanagerstarted = true;
-			cameramanager = CameraManager.playCutscene(world, preview, player);
-		}
-		if(cameramanager!=null && cameramanager.isAlive()) {
-			return;
-		}
-		cameramanager = null;
 		if(player.getWorld() == world && player.isOnline()) {
+			if(!playlistloaded) {
+				playlistloaded = songplaylistname.equals(AMusic.getPackName(player));
+				return;
+			}
+			if(!cameramanagerstarted) {
+				cameramanagerstarted = true;
+				cameramanager = CameraManager.playCutscene(world, preview, player);
+			}
+			if(cameramanager!=null && cameramanager.isAlive()) {
+				return;
+			}
+			cameramanager = null;
 			
 			if(startzone==null) {
 				player.sendMessage("Game autostart!");
