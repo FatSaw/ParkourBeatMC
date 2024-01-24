@@ -25,7 +25,7 @@ final class GameTicker extends BukkitRunnable {
 	public void run() {
 		Location loc = player.getLocation();
 		double x = loc.getX(), y = loc.getY(), z = loc.getZ();
-		boolean notfall = !gamezone.isInside(x, y, z);
+		boolean notfall = gamezone.isOutside(x, y, z);
 		if(player.getWorld() != world || notfall) {
 			gamecloser.runTaskLater(ParkourBeat.plugin, 50L);
 			cancel();
