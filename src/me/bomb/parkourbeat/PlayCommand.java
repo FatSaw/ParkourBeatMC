@@ -33,8 +33,13 @@ public final class PlayCommand implements CommandExecutor {
 				sender.sendMessage("No free arena worlds!");
 			} else {
 				String freearenaname = avilableworlds.get(random.nextInt(avilableworlds.size()));
-				sender.sendMessage("Trying to start game...");
-				new GameStarter(freearenaname, player);
+				
+				try {
+					new GameStarter(freearenaname, player);
+					sender.sendMessage("Trying to start game...");
+				} catch (NullPointerException e) {
+					sender.sendMessage("Game start error: " + e.getMessage());
+				}
 			}
 		} else {
 			sender.sendMessage("Command only for players!");
