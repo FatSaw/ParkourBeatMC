@@ -5,8 +5,6 @@ import me.bomb.parkourbeat.cutscene.CameraManager;
 import me.bomb.parkourbeat.ParkourBeat;
 import me.bomb.parkourbeat.data.Settings;
 import me.bomb.parkourbeat.location.LocationInside;
-import me.bomb.parkourbeat.location.LocationPoint;
-import me.bomb.parkourbeat.location.LocationZone;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -21,64 +19,55 @@ import java.util.Set;
 public class GameStarter extends BukkitRunnable {
 
     private final static HashMap<Player, GameStarter> inGamePlayers = new HashMap<>();
-    private final Location spawnloc;
+    private final Location spawnLoc;
     private final World world;
-    private final String songPlayListName, songName;
-    private final LocationZone spawnZone, startZone, gameZone, finish;
     private final Player player;
-    private final LocationPoint[] preview;
     private final GameTicker gameTicker;
     private final GameCloser gameCloser;
     private boolean playListLoaded, cameraManagerStarted, ready;
     private CameraManager cameraManager;
+    private final GameOptions gameOptions;
 
-    public GameStarter(String arenaname, Player player) throws NullPointerException {
-        if (arenaname == null) {
-            throw new NullPointerException("arenaname cannot be null");
+    public GameStarter(String arenaName, Player player) throws NullPointerException {
+        if (arenaName == null) {
+            throw new NullPointerException("arenaName cannot be null");
         }
         if (player == null) {
             throw new NullPointerException("player cannot be null");
         }
-        GameOptions gameoptions = GameOptions.initArena(arenaname);
-        if (gameoptions == null) {
+        gameOptions = GameOptions.initArena(arenaName);
+        if (gameOptions == null) {
             throw new NullPointerException("gameoptions cannot be null");
         }
         inGamePlayers.put(player, this);
-        world = Bukkit.getWorld(arenaname);
+        world = Bukkit.getWorld(arenaName);
         this.player = player;
-        this.spawnZone = gameoptions.spawnzone;
-        this.startZone = gameoptions.startzone;
-        this.gameZone = gameoptions.gamezone;
-        this.preview = gameoptions.preview;
-        this.finish = gameoptions.finishzone;
-        this.songPlayListName = gameoptions.songplaylistname;
-        this.songName = gameoptions.songname;
         player.setGameMode(GameMode.ADVENTURE);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setSaturation(5.0F);
         player.setExhaustion(0.0F);
         player.setFireTicks(-40);
-        LocationInside loc = spawnZone.randomInside(0.5D);
-        spawnloc = new Location(world, loc.x, loc.y, loc.z, gameoptions.yaw, gameoptions.pitch);
-        player.teleport(spawnloc);
+        LocationInside loc = gameOptions.spawnZone.randomInside(0.5D);
+        spawnLoc = new Location(world, loc.x, loc.y, loc.z, gameOptions.yaw, gameOptions.pitch);
+        player.teleport(spawnLoc);
 
         gameCloser = new GameCloser(world, this, inGamePlayers);
-        gameTicker = new GameTicker(player, world, gameCloser, gameZone, finish);
-        if (!songPlayListName.equals(AMusic.getPackName(player))) {
-            AMusic.loadPack(player, songPlayListName, false);
+        gameTicker = new GameTicker(player, world, gameCloser, gameOptions.gameZone, gameOptions.finishZone);
+        if (!gameOptions.songPlayListName.equals(AMusic.getPackName(player))) {
+            AMusic.loadPack(player, gameOptions.songPlayListName, false);
         }
         runTaskTimerAsynchronously(ParkourBeat.plugin, 0L, 5L);
     }
 
     public static void leaveGame(Player player) {
         inGamePlayers.remove(player);
-        player.teleport(Settings.exitlocation);
+        player.teleport(Settings.exitLocation);
         player.setGameMode(GameMode.ADVENTURE);
     }
 
     public static Set<String> getWorlds() {
-        Set<String> worlds = new HashSet<String>();
+        Set<String> worlds = new HashSet<>();
         for (Player player : inGamePlayers.keySet()) {
             worlds.add(player.getWorld().getName());
         }
@@ -89,23 +78,23 @@ public class GameStarter extends BukkitRunnable {
     public void run() {
         if (player.getWorld() == world && player.isOnline()) {
             if (!playListLoaded) {
-                playListLoaded = songPlayListName.equals(AMusic.getPackName(player));
+                playListLoaded = gameOptions.songPlayListName.equals(AMusic.getPackName(player));
                 return;
             }
             if (!cameraManagerStarted) {
                 cameraManagerStarted = true;
-                cameraManager = CameraManager.playCutscene(world, preview, player);
+                cameraManager = CameraManager.playCutscene(world, gameOptions.preview, player);
             }
             if (cameraManager != null && cameraManager.isAlive()) {
                 return;
             }
             cameraManager = null;
 
-            if (startZone == null) {
+            if (gameOptions.startZone == null) {
                 player.sendMessage("Game autostart!");
                 AMusic.setRepeatMode(player, null);
-                AMusic.playSound(player, songName);
-                player.teleport(spawnloc);
+                AMusic.playSound(player, gameOptions.songName);
+                player.teleport(spawnLoc);
                 gameTicker.runTaskTimer(ParkourBeat.plugin, 50L, 1L);
             } else {
                 if (!ready) {
@@ -113,12 +102,12 @@ public class GameStarter extends BukkitRunnable {
                     player.sendMessage("Game ready!");
                 }
                 Location loc = player.getLocation();
-                if (startZone.isOutside(loc.getX(), loc.getY(), loc.getZ())) {
+                if (gameOptions.startZone.isOutside(loc.getX(), loc.getY(), loc.getZ())) {
                     return;
                 }
                 player.sendMessage("Game start!");
                 AMusic.setRepeatMode(player, null);
-                AMusic.playSound(player, songName);
+                AMusic.playSound(player, gameOptions.songName);
                 gameTicker.runTaskTimer(ParkourBeat.plugin, 0L, 1L);
             }
         } else {

@@ -1,10 +1,5 @@
 package me.bomb.parkourbeat.location;
 
-import me.bomb.parkourbeat.data.Settings;
-import me.bomb.parkourbeat.game.GameOptions;
-
-import java.util.HashSet;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LocationZone {

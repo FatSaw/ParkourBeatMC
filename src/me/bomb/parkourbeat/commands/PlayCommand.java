@@ -1,7 +1,6 @@
 package me.bomb.parkourbeat.commands;
 
 import me.bomb.parkourbeat.data.Settings;
-import me.bomb.parkourbeat.game.GameOptions;
 import me.bomb.parkourbeat.game.GameStarter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,7 +24,7 @@ public class PlayCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             Set<String> worldNames = Settings.getWorldNames();
-            List<String> availableWorlds = new ArrayList<String>();
+            List<String> availableWorlds = new ArrayList<>();
             Set<String> inGameWorlds = GameStarter.getWorlds();
             for (String worldName : worldNames) {
                 if (!inGameWorlds.contains(worldName)) {

@@ -19,56 +19,56 @@ import java.util.stream.Stream;
 
 public class GameOptions {
 
-    protected final String songplaylistname, songname;
+    protected final String songPlayListName, songName;
     protected final LocationPoint[] preview;
-    protected final LocationZone spawnzone, startzone, gamezone, finishzone;
-    private final byte[] leveldat;
-    private final HashMap<String, byte[]> regiondata;
+    protected final LocationZone spawnZone, startZone, gameZone, finishZone;
+    private final byte[] levelDat;
+    private final HashMap<String, byte[]> regionData;
     protected float yaw, pitch;
 
-    public GameOptions(String songplaylistname, String songname, byte[] leveldat, HashMap<String, byte[]> regiondata, LocationPoint[] preview, LocationZone spawnzone, float yaw, float pitch, LocationZone startzone, LocationZone gamezone, LocationZone finishzone) {
-        this.songplaylistname = songplaylistname;
-        this.songname = songname;
-        this.regiondata = regiondata;
-        this.leveldat = leveldat;
+    public GameOptions(String songPlayListName, String songName, byte[] levelDat, HashMap<String, byte[]> regionData, LocationPoint[] preview, LocationZone spawnZone, float yaw, float pitch, LocationZone startZone, LocationZone gameZone, LocationZone finishZone) {
+        this.songPlayListName = songPlayListName;
+        this.songName = songName;
+        this.regionData = regionData;
+        this.levelDat = levelDat;
         this.preview = preview;
-        this.spawnzone = spawnzone;
+        this.spawnZone = spawnZone;
         this.yaw = yaw;
         this.pitch = pitch;
-        this.startzone = startzone;
-        this.gamezone = gamezone;
-        this.finishzone = finishzone;
+        this.startZone = startZone;
+        this.gameZone = gameZone;
+        this.finishZone = finishZone;
     }
 
-    protected static GameOptions initArena(String arenaname) {
-        GameOptions gameOption = Settings.gameoptions.get(arenaname);
-        if (gameOption == null || !Settings.loadedarenas.add(arenaname)) {
+    protected static GameOptions initArena(String arenaName) {
+        GameOptions gameOption = Settings.gameOptions.get(arenaName);
+        if (gameOption == null || !Settings.loadedArenas.add(arenaName)) {
             return null;
         }
-        File worldDir = new File(arenaname);
+        File worldDir = new File(arenaName);
         deleteFolder(worldDir);
         File regionDir = new File(worldDir, "region");
         regionDir.mkdirs();
         try {
             FileOutputStream fos = new FileOutputStream(new File(worldDir, "level.dat"), false);
-            fos.write(gameOption.leveldat);
+            fos.write(gameOption.levelDat);
             fos.close();
         } catch (IOException e) {
             deleteFolder(worldDir);
-            Settings.loadedarenas.remove(arenaname);
+            Settings.loadedArenas.remove(arenaName);
             return null;
         }
-        for (String filename : gameOption.regiondata.keySet()) {
+        for (String filename : gameOption.regionData.keySet()) {
             try {
                 FileOutputStream fos = new FileOutputStream(new File(regionDir, filename), false);
-                fos.write(gameOption.regiondata.get(filename));
+                fos.write(gameOption.regionData.get(filename));
                 fos.close();
             } catch (IOException ignored) {
 
             }
         }
-        WorldCreator worldcreator = new WorldCreator(arenaname);
-        worldcreator.generator(Settings.voidgen);
+        WorldCreator worldcreator = new WorldCreator(arenaName);
+        worldcreator.generator(Settings.voidGen);
         worldcreator.generateStructures(false);
         World world = worldcreator.createWorld();
         world.setKeepSpawnInMemory(false);
@@ -80,7 +80,7 @@ public class GameOptions {
     }
 
     public static boolean destroyArena(String arenaName) {
-        if (!Settings.loadedarenas.remove(arenaName)) {
+        if (!Settings.loadedArenas.remove(arenaName)) {
             return false;
         }
         World world = Bukkit.getWorld(arenaName);
@@ -88,7 +88,7 @@ public class GameOptions {
             return false;
         }
         for (Player player : world.getPlayers()) {
-            player.teleport(Settings.exitlocation);
+            player.teleport(Settings.exitLocation);
         }
         File worldDirectory = world.getWorldFolder();
         return Bukkit.unloadWorld(world, false) && deleteFolder(worldDirectory);

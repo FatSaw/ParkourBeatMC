@@ -1,7 +1,6 @@
 package me.bomb.parkourbeat;
 
 import me.bomb.parkourbeat.data.Settings;
-import me.bomb.parkourbeat.game.GameOptions;
 import me.bomb.parkourbeat.game.GameStarter;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -22,11 +21,11 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 public final class EventListener implements Listener {
 
-    private static final Location exitlocation = Settings.exitlocation.clone().add(0, 325, 0);
+    private static final Location exitlocation = Settings.exitLocation.clone().add(0, 325, 0);
 
     @EventHandler
     public void onSpawnLocation(PlayerSpawnLocationEvent event) {
-        event.setSpawnLocation(Settings.exitlocation);
+        event.setSpawnLocation(Settings.exitLocation);
     }
 
     @EventHandler
@@ -38,7 +37,7 @@ public final class EventListener implements Listener {
 
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
-        if (event.getWorld() == Settings.lobbyworld) {
+        if (event.getWorld() == Settings.lobbyWorld) {
             event.setCancelled(true);
         }
     }
@@ -53,7 +52,7 @@ public final class EventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        player.teleport(Settings.exitlocation);
+        player.teleport(Settings.exitLocation);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setSaturation(5.0F);
@@ -70,7 +69,7 @@ public final class EventListener implements Listener {
         event.setCancelled(true);
         Player player = (Player) entity;
         DamageCause cause = event.getCause();
-        if (cause == DamageCause.VOID && player.getWorld() == Settings.lobbyworld) {
+        if (cause == DamageCause.VOID && player.getWorld() == Settings.lobbyWorld) {
             Vector velocity = player.getVelocity();
             player.teleport(exitlocation.clone().setDirection(player.getLocation().getDirection()));
             player.setVelocity(velocity);

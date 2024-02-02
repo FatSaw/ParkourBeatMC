@@ -19,13 +19,13 @@ import java.util.*;
 
 public class Settings {
 
-    public final static World lobbyworld;
-    public final static Location exitlocation;
+    public final static World lobbyWorld;
+    public final static Location exitLocation;
     public final static boolean debug;
-    public final static Set<String> loadedarenas = new HashSet<String>();
-    private final static FilenameFilter mcafilter = (dir, name) -> name.endsWith(".mca");
-    public final static HashMap<String, GameOptions> gameoptions = new HashMap<>();
-    public final static ChunkGenerator voidgen = new ChunkGenerator() {
+    public final static Set<String> loadedArenas = new HashSet<String>();
+    private final static FilenameFilter mcAFilter = (dir, name) -> name.endsWith(".mca");
+    public final static HashMap<String, GameOptions> gameOptions = new HashMap<>();
+    public final static ChunkGenerator voidGen = new ChunkGenerator() {
         @Override
         public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomeGrid) {
             return new byte[16][];
@@ -39,8 +39,8 @@ public class Settings {
         File worldsDirectory = new File(workingDirectory, "worlds");
         createFolder(worldsDirectory);
         YamlConfiguration config = loadConfig(workingDirectory, plugin);
-        lobbyworld = Bukkit.getWorld(config.getString("lobbyworld", "world"));
-        exitlocation = lobbyworld.getSpawnLocation();
+        lobbyWorld = Bukkit.getWorld(config.getString("lobbyworld", "world"));
+        exitLocation = lobbyWorld.getSpawnLocation();
         debug = config.getBoolean("debug", false);
         ConfigurationSection gamefieldscs = config.getConfigurationSection("gamefields");
         if (gamefieldscs != null) {
@@ -103,7 +103,7 @@ public class Settings {
                     leveldat = readbuf;
                 } catch (IOException ignored) {
                 }
-                File[] regionFiles = gamefielddir.listFiles(mcafilter);
+                File[] regionFiles = gamefielddir.listFiles(mcAFilter);
                 HashMap<String, byte[]> regionData = new HashMap<>();
                 for (File regionfile : regionFiles) {
                     readbuf = new byte[8388608];
@@ -118,7 +118,7 @@ public class Settings {
                 GameOptions gameoption = new GameOptions(songplaylistname, songname, leveldat, regionData, preview, spawnruner, spawnyaw, spawnpitch, startzone, gamezone, finishzone);
                 gamefieldid = gamefieldid.concat("_");
                 for (byte i = (byte) worldcount; --i > -1; ) {
-                    gameoptions.put(gamefieldid.concat(Byte.toString(i)), gameoption);
+                    gameOptions.put(gamefieldid.concat(Byte.toString(i)), gameoption);
                 }
             }
         }
@@ -257,6 +257,7 @@ public class Settings {
                         pitch += previousLocation.getPitch();
                     }
                     if (relativeLocation) {
+                        // Обработка относительных координат
                         if (x == -0.0D) {
                             x = 0.0D;
                         }
@@ -266,8 +267,39 @@ public class Settings {
                         if (z == -0.0D) {
                             z = 0.0D;
                         }
-                        float aPitch = (float) Math.toRadians(pitch), ayaw = (float) Math.toRadians(yaw);
-                        double cosPitch = TheMath.cos(aPitch), cosyaw = TheMath.cos(ayaw), sinyaw = TheMath.sin(ayaw), sinpitch = TheMath.sin(aPitch), forwardbz = cosyaw * cosPitch, forwardbx = sinyaw * cosPitch, upbz = cosyaw * sinpitch, upbx = sinyaw * sinpitch, forwards = Math.sqrt(forwardbx * forwardbx + sinpitch * sinpitch + forwardbz * forwardbz), sides = Math.sqrt(sinyaw * sinyaw + cosyaw * cosyaw), ups = Math.sqrt(upbx * upbx + cosPitch * cosPitch + upbz * upbz), forwardx = -(forwardbx / forwards) * x, forwardy = -(sinpitch / forwards) * x, forwardz = (forwardbz / forwards) * x, sidedx = (cosyaw / sides) * z, sidedz = (sinyaw / sides) * z, updx = -(upbx / ups) * y, updy = (cosPitch / ups) * y, updz = (upbz / ups) * y;
+
+                        // Преобразование углов из градусов в радианы
+                        float aPitch = (float) Math.toRadians(pitch);
+                        float aYaw = (float) Math.toRadians(yaw);
+
+                        // Вычисление косинусов и синусов углов
+                        double cosPitch = TheMath.cos(aPitch);
+                        double cosYaw = TheMath.cos(aYaw);
+                        double sinYaw = TheMath.sin(aYaw);
+                        double sinPitch = TheMath.sin(aPitch);
+
+                        // Вычисление компонентов векторов направления
+                        double forwardbz = cosYaw * cosPitch;
+                        double forwardbx = sinYaw * cosPitch;
+                        double upbz = cosYaw * sinPitch;
+                        double upbx = sinYaw * sinPitch;
+
+                        // Нормализация векторов направления
+                        double forwards = Math.sqrt(forwardbx * forwardbx + sinPitch * sinPitch + forwardbz * forwardbz);
+                        double sides = Math.sqrt(sinYaw * sinYaw + cosYaw * cosYaw);
+                        double ups = Math.sqrt(upbx * upbx + cosPitch * cosPitch + upbz * upbz);
+
+                        // Вычисление компонентов смещения по координатам
+                        double forwardx = -(forwardbx / forwards) * x;
+                        double forwardy = -(sinPitch / forwards) * x;
+                        double forwardz = (forwardbz / forwards) * x;
+                        double sidedx = (cosYaw / sides) * z;
+                        double sidedz = (sinYaw / sides) * z;
+                        double updx = -(upbx / ups) * y;
+                        double updy = (cosPitch / ups) * y;
+                        double updz = (upbz / ups) * y;
+
+                        // Обновление координат по смещениям
                         x = previousLocation.getX();
                         y = previousLocation.getY();
                         z = previousLocation.getZ();
@@ -275,6 +307,7 @@ public class Settings {
                         y += forwardy + updy;
                         z += forwardz + sidedz + updz;
                     } else {
+                        // Обработка абсолютных координат
                         if (relativeX) {
                             x += previousLocation.getX();
                         }
@@ -327,11 +360,11 @@ public class Settings {
     }
 
     public static Set<String> getWorldNames() {
-        return gameoptions.keySet();
+        return gameOptions.keySet();
     }
 
     protected static int getArenaCount() {
-        return gameoptions.size();
+        return gameOptions.size();
     }
 
 }

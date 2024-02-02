@@ -34,7 +34,7 @@ public class GameCloser extends BukkitRunnable {
             player.setExhaustion(0.0F);
             player.setFireTicks(-40);
             inGamePlayers.remove(player, game);
-            player.teleport(Settings.exitlocation);
+            player.teleport(Settings.exitLocation);
         }
         GameOptions.destroyArena(world.getName());
     }

@@ -12,11 +12,11 @@ import org.bukkit.entity.Player;
 import java.util.Set;
 
 public class TpToWorldCommand implements CommandExecutor {
-    private final Location mainworldlocation;
+    private final Location mainworldLocation;
     private final Set<String> worlds;
 
     public TpToWorldCommand(Location mainworldlocation, Set<String> worlds) {
-        this.mainworldlocation = mainworldlocation;
+        this.mainworldLocation = mainworldlocation;
         this.worlds = worlds;
     }
 
@@ -25,22 +25,22 @@ public class TpToWorldCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (args.length > 0) {
-                String worlDid = args[0].toLowerCase();
+                String worldId = args[0].toLowerCase();
 
-                World world = Bukkit.getWorld(worlDid);
+                World world = Bukkit.getWorld(worldId);
                 if (world == null) {
                     sender.sendMessage("World not loaded!");
                     return true;
                 }
                 player.teleport(world.getSpawnLocation());
-                if (worlds.contains(worlDid)) {
+                if (worlds.contains(worldId)) {
                     player.setGameMode(GameMode.SPECTATOR);
                     player.sendMessage("Teleported to parkourbeat world ".concat(world.getName()));
                 } else {
                     sender.sendMessage("World not loaded!");
                 }
             } else {
-                player.teleport(mainworldlocation);
+                player.teleport(mainworldLocation);
                 player.sendMessage("Teleported to main world");
                 player.setGameMode(GameMode.ADVENTURE);
             }
